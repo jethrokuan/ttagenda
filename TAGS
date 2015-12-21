@@ -1,0 +1,30 @@
+
+profiles.clj,0
+
+project.clj,51
+(defproject ttagenda "0.1.0-SNAPSHOT"ttagenda1,0
+
+resources/sql/queries.sql,277
+CREATE TABLE agenda (agenda2,22
+ID SERIAL,agenda.ID3,44
+DISPLAYID INT NOT NULL,agenda.DISPLAYID4,55
+CHANNEL VARCHAR(255),agenda.CHANNEL5,79
+TOPIC   VARCHAR(255),agenda.TOPIC6,101
+USERNAME VARCHAR(255),agenda.USERNAME7,123
+CONTENT VARCHAR(255),agenda.CONTENT8,146
+
+src/ttagenda/core.clj,259
+(defn add-agenda [txt]add-agenda3,20
+(defn clear-agenda []clear-agenda10,180
+(defn numbered-list [v]numbered-list17,323
+(defn atom-print [v]atom-print20,433
+(defn list-agenda []list-agenda26,526
+(defn process-request [params]process-request30,584
+
+src/ttagenda/db.clj,141
+(def db-spec {:classname "org.postgresql.Driver"db-spec5,104
+(defqueries "sql/queries.sql" {:connection db-spec})"sql/queries.sql"10,274
+
+src/ttagenda/handler.clj,59
+(defroutes app-routesapp-routes7,221
+(def appapp18,607

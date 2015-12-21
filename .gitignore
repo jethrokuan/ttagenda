@@ -1,6 +1,10 @@
-.lein-env
-/.lein-repl-history
+/target
+/lib
+/classes
+/checkouts
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
 /.nrepl-port
-/target/classes/META-INF/maven/ttagenda/ttagenda/pom.properties
-/target/classes/ttagenda/listener$_contextDestroyed.class
-target/
