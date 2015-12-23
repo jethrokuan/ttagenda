@@ -19,13 +19,13 @@
   (let [agendas (db/find-all-agendas-in-channel {:channel channel-id})]
     (p/print-agenda-all agendas)))
 
-(defn- delete-agenda! [& {:keys [channel topic displayid] :as params}]
+(defn- delete-agenda! [params]
   (try
     (db/delete-agenda! params)
     (catch Exception e (.getNextException e)))
   "delete successful")
 
-(defn process-request-by-topic [topic channel_id user_name topic-request]
+(defn process-request-by-topic [{:keys [user_name topic channel_id topic-request] :as params}]
   (let [splits (str/split topic-request #" " 2)
         command (first splits)
         text (second splits)]
@@ -33,7 +33,7 @@
       "add" (add-agenda! :topic topic :channel channel_id :username user_name :content text) 
       "delete" (cond
                  (nil? text) "your input cannot be empty"
-                 ;; TODO: check if integer
+                 (integer? (read-string text)) "your input must be an integer"
                  :else (delete-agenda! :topic topic :id text :channel channel_id))
       "clear" (clear-agenda-topic! :topic topic)
       "list" (list-agendas-in-topic :topic topic :channel channel_id)
@@ -49,4 +49,4 @@
       "add" "Invalid topic name 'add'"
       "delete" "Invalid topic name 'delete'"
       "clear" "Invalid topic name 'clear'"
-      (process-request-by-topic topic channel_id user_name topic-request))))
+      (process-request-by-topic (assoc params :topic-request topic-request)))))

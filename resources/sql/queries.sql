@@ -15,7 +15,6 @@ ORDER BY TOPIC DESC
 -- name: find-all-agendas-in-topic
 SELECT * FROM agenda
 WHERE CHANNEL=:channel AND TOPIC=:topic
-ORDER BY DISPLAYID
 
 -- name: clear-agenda-by-topic!
 DELETE FROM agenda
@@ -27,8 +26,8 @@ WHERE CHANNEL = :channel
 
 -- name: create-agenda!
 INSERT INTO agenda
-(CHANNEL, TOPIC, CONTENT, USERNAME, DISPLAYID)
-VALUES (:channel, :topic, :content, :username, :displayid)
+(CHANNEL, TOPIC, CONTENT, USERNAME)
+VALUES (:channel, :topic, :content, :username)
 
 -- name: delete-agenda!
 DELETE FROM agenda
