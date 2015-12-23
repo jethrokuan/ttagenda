@@ -23,7 +23,9 @@
   (let [agendas (db/find-all-agendas-in-topic params)
         topics (db/find-all-topics-in-channel params)]
     (str (p/print-agenda agendas) "\n"
-         "All topics in channel: " (p/print-topics topics))))
+         "All topics in channel: " (if (= 0 (count topic))
+                                     "yay! nothing here!"
+                                     (p/print-topics topics)))))
 
 (defn- delete-agenda! [& {:keys [id] :as params}]
   (let [iid (read-string id)]
@@ -46,6 +48,12 @@
       "list" (list-agendas-in-topic :topic topic :channel channel_id)
       "not a valid command")))
 
+(defn- clear-channel! [& {:keys [channel_id channel_name] :as params}]
+  (try
+    (db/clear-agenda-by-channel! params)
+    (str "Channel #" channel_name " cleared!")
+    (catch Exception e (str "caught exception: " (.getNextException e)))))
+
 (defn process-request [{:keys [channel_id user_name text channel_name] :as params}]
   (let [splits (str/split text #" " 2)
         topic (first splits)
@@ -54,5 +62,5 @@
       "list" (list-agendas-in-channel :channel channel_id :topic channel_name)
       "add"  (process-request-by-topic (assoc params :topic-request text :topic channel_name))
       "delete" (process-request-by-topic (assoc params :topic-request text :topic channel_name))
-      "clear" (process-request-by-topic (assoc params :topic-request text :topic channel_name))
+      "clear" (clear-channel! :channel channel_id :channel_name channel_name)
       (process-request-by-topic (assoc params :topic-request topic-request :topic topic)))))
