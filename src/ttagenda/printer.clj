@@ -17,12 +17,21 @@
 (defn- prnt [r]
   (let [topic (first r)
         merged (map vector (iterate inc 1) r)]
-    (str "Topic: #" (:topic (first r)) "\n"
+    (str "*Topic: #" (:topic (first r)) "*\n"
+         "------------------------------------\n"
+         "  id                   item         \n"
+         "------------------------------------\n"
          (reduce
           (fn [i v]
             (let [displayid (first v)
-                  result (last v)]
-              (str "(" (:id result) ")" "\t\t" displayid ".\t" (:content result) "\n" i)))
+                  result (last v)]            
+              (str "(" (:id result) ")"
+                   (if (> 10 (:id result)) "\t\t\t" "\t\t ")
+                   displayid
+                   (if (> 10  displayid) ".\t\t" ".\t")
+                   (:content result)
+                   "\n"
+                   i)))
           " "
           (reverse merged)))))
 

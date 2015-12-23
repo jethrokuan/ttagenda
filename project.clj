@@ -8,7 +8,9 @@
                  [yesql "0.5.1"]
                  [compojure "1.4.0"]
                  [ring/ring-defaults "0.1.5"]
-                 [environ "1.0.1"]]
+                 [environ "1.0.1"]
+                 [clj-http "2.0.0"]
+                 [org.clojure/data.json "0.2.6"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-environ "1.0.1"]]
   :ring {:handler ttagenda.handler/app}

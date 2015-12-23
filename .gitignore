@@ -3,6 +3,7 @@
 /classes
 /checkouts
 pom.xml
+profiles.clj
 pom.xml.asc
 *.jar
 *.class

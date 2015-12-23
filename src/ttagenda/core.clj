@@ -1,12 +1,14 @@
 (ns ttagenda.core
   (:require [ttagenda.db :as db]
             [clojure.string :as str]
-            [ttagenda.printer :as p]))
+            [ttagenda.printer :as p]
+            [ttagenda.webhook :refer [post-to-agenda]]))
 
 (defn- add-agenda! [& {:keys [channel topic username content] :as params}]
   (try
     (db/create-agenda! params)
-    (str "'" content "'" " added to topic #" topic)
+    (post-to-agenda {:text (str "_'" content "'_" " added to topic #" topic)
+                     :channel channel})
     (catch Exception e (str "caught exception: " (.getNextException e)))))
 
 (defn- clear-agenda-topic! [ & {:keys [topic]}]
