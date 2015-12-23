@@ -7,8 +7,8 @@ USERNAME VARCHAR(255),
 CONTENT VARCHAR(255),
 PRIMARY KEY (ID, CHANNEL, TOPIC))
 
--- name: find-all-agendas-in-channel
-SELECT * FROM agenda
+-- name: find-all-topics-in-channel
+SELECT DISTINCT TOPIC FROM agenda
 WHERE CHANNEL=:channel
 ORDER BY TOPIC DESC
 
