@@ -8,4 +8,6 @@
                     :content-type :json}))
 
 (def post-to-agenda
-  (partial post-to-slack (env :hook-url)))
+  (partial post-to-slack (or
+                          (System/getProperty "WEBHOOK_URL")
+                          (env :hook-url))))
