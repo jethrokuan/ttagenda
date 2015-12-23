@@ -30,14 +30,16 @@
                                      (p/print-topics topics)))))
 
 (defn- delete-agenda! [& {:keys [id] :as params}]
-  (let [iid (read-string id)]
-    (cond
-      (nil? iid) "your input cannot be empty"
-      (not (integer? iid)) "your input must be an integer"
-      :else (try
-              (db/delete-agenda! (assoc params :id iid))
-              "deletion successful!"
-              (catch Exception e (str "caught exception: " (.getNextException e)))))))
+  (if (nil? id)
+    "your input cannot be empty"
+    (let [iid (read-string id)]
+      (cond
+        (not (integer? iid)) "your input must be an integer"
+        :else (try
+                (if (= 0 (db/delete-agenda! (assoc params :id iid)))                 
+                  "nothing deleted... please check your id input again."
+                  "deletion successful!")
+                (catch Exception e (str "caught exception: " (.getNextException e))))))))
 
 (defn process-request-by-topic [{:keys [user_name topic channel_id topic-request] :as params}]
   (let [splits (str/split topic-request #" " 2)
