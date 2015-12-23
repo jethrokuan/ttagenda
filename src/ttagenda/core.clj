@@ -53,6 +53,6 @@
     (condp = topic
       "list" (list-agendas-in-channel :channel channel_id :topic channel_name)
       "add"  (process-request-by-topic (assoc params :topic-request text :topic channel_name))
-      "delete" "Invalid topic name 'delete'"
-      "clear" "Invalid topic name 'clear'"
+      "delete" (process-request-by-topic (assoc params :topic-request text :topic channel_name))
+      "clear" (process-request-by-topic (assoc params :topic-request text :topic channel_name))
       (process-request-by-topic (assoc params :topic-request topic-request :topic topic)))))
