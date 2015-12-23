@@ -5,11 +5,13 @@
             [ttagenda.webhook :refer [post-to-agenda]]))
 
 (defn- add-agenda! [& {:keys [channel topic username content] :as params}]
-  (try
-    (db/create-agenda! params)
-    (post-to-agenda {:text (str "_'" content "'_" " added to topic #" topic)
-                     :channel channel})
-    (catch Exception e (str "caught exception: " (.getNextException e)))))
+  (if (nil? content)
+    "your input cannot be empty"
+    (try
+      (db/create-agenda! params)
+      (post-to-agenda {:text (str "_'" content "'_" " added to topic #" topic)
+                       :channel channel})
+      (catch Exception e (str "caught exception: " (.getNextException e))))))
 
 (defn- clear-agenda-topic! [ & {:keys [topic]}]
   (db/clear-agenda-by-topic! {:topic topic})
@@ -23,7 +25,7 @@
   (let [agendas (db/find-all-agendas-in-topic params)
         topics (db/find-all-topics-in-channel params)]
     (str (p/print-agenda agendas) "\n"
-         "All topics in channel: " (if (= 0 (count topic))
+         "All topics in channel: " (if (= 0 (count topics))
                                      "yay! nothing here!"
                                      (p/print-topics topics)))))
 
