@@ -4,8 +4,10 @@
             [ttagenda.printer :as p]))
 
 (defn- add-agenda! [& {:keys [channel topic username content] :as params}]
-  (db/create-agenda! params)
-  (str "'" content "'" " added to topic #" topic))
+  (try
+    (db/create-agenda! params)
+    (str "'" content "'" " added to topic #" topic)
+    (catch Exception e (str "caught exception: " (.getNextException e)))))
 
 (defn- clear-agenda-topic! [ & {:keys [topic]}]
   (db/clear-agenda-by-topic! {:topic topic})
