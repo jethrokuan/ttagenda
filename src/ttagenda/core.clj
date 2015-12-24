@@ -55,14 +55,16 @@
                     (try
                       (db/remove-from-keytable! {:keynum keynum})
                       (catch Exception e (str "caught exception: " (.getNextException e))))
-                    "Channel cleared!"
+                    (post-to-agenda {:text "Channel cleared!"
+                                     :channel channel})
                     (catch Exception e (str "caught exception: " (.getNextException e))))
           (try
             (db/clear-agenda-by-topic! {:topic item :channel channel})
             (try
               (db/remove-from-keytable! {:keynum keynum})
               (catch Exception e (str "caught exception: " (.getNextException e))))
-            (str "Topic #" item " cleared!")
+            (post-to-agenda {:text (str "Topic _#" item "'_" " cleared!")
+                             :channel channel})
             (catch Exception e (str "caught exception: " (.getNextException e))))
           ))
       "No matching keytable found. Please try again."
@@ -82,14 +84,31 @@
       "list" (list-agendas-in-topic :topic topic :channel channel_id)
       "not a valid command")))
 
+(defn- display-documentation []
+  "\n*AGENDA DOCUMENTATION*\n
+   ----------------------------------------------------------------\n
+   */agenda list* : Lists agendas in default topic, shows other available topics in channel\n
+   */agenda add [text]* : Adds to default channel topic\n
+   */agenda delete [id no.]* : Delete id number in default topic\n
+   \t\t\t \"deletion successful\" is returned when something is actually deleted\n
+   \t\t\t \"nothing deleted ...\" is returned when ... nothing is deleted\n
+   \t\t\t*you can only delete items within your channel*\n
+   */agenda clear* : clears all agendas in channel.\n
+   \t\tTriggers the creation of a keytable, because this is a dangerous command.\n
+  */agenda [topic] [add | list | delete | clear ]* : self-explanatory actions on sub-topics within channel\n
+  * /agenda keytable [keynum]* : enter the passphrase here te confirm the clear command!"
+  )
+
 (defn process-request [{:keys [channel_id user_name text channel_name] :as params}]
   (let [splits (str/split text #" " 2)
         topic (first splits)
         topic-request (last splits)]
     (condp = topic
+      "" (list-agendas-in-channel :channel channel_id :topic channel_name)
       "list" (list-agendas-in-channel :channel channel_id :topic channel_name)
       "add"  (process-request-by-topic (assoc params :topic-request text :topic channel_name))
       "delete" (process-request-by-topic (assoc params :topic-request text :topic channel_name))
       "clear" (clear-agenda! :channel channel_id :item text)
+      "help" (display-documentation)
       "keytable" (clear-agenda-for-real! :keynum topic-request :channel channel_id)
       (process-request-by-topic (assoc params :topic-request topic-request :topic topic)))))
