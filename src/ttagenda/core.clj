@@ -2,7 +2,8 @@
   (:require [ttagenda.db :as db]
             [clojure.string :as str]
             [ttagenda.printer :as p]
-            [ttagenda.webhook :refer [post-to-agenda]]))
+            [ttagenda.webhook :refer [post-to-agenda]]
+            [ttagenda.keytable :refer [make-keytable]]))
 
 (defn- add-agenda! [& {:keys [channel topic username content] :as params}]
   (if (nil? content)
@@ -12,10 +13,6 @@
       (post-to-agenda {:text (str "_'" content "'_" " added to topic #" topic)
                        :channel channel})
       (catch Exception e (str "caught exception: " (.getNextException e))))))
-
-(defn- clear-agenda-topic! [ & {:keys [topic]}]
-  (db/clear-agenda-by-topic! {:topic topic})
-  (str "#" topic " cleared!"))
 
 (defn- list-agendas-in-topic [& {:keys [channel topic] :as params}]
   (let [agendas (db/find-all-agendas-in-topic params)]
@@ -41,6 +38,39 @@
                   "deletion successful!")
                 (catch Exception e (str "caught exception: " (.getNextException e))))))))
 
+(defn- clear-agenda! [& {:keys [channel item] :as params}]
+  (prn params)
+  (let [keynum (make-keytable)]
+    (if (= 1 (db/insert-key-table! {:keynum keynum :channel channel :item item}))
+      (str "to confirm your request, type /agenda keytable " keynum)
+      "operation failed")))
+
+(defn- clear-agenda-for-real! [& {:keys [keynum channel] :as params}]
+  (let [r (db/find-key {:keynum keynum})]
+    (if (seq r)
+      (let [item (:item (first r))]
+        (condp = item
+          "clear" (try
+                    (db/clear-agenda-by-channel! {:channel channel})                    
+                    (try
+                      (db/remove-from-keytable! {:keynum keynum})
+                      (catch Exception e (str "caught exception: " (.getNextException e))))
+                    "Channel cleared!"
+                    (catch Exception e (str "caught exception: " (.getNextException e))))
+          (try
+            (db/clear-agenda-by-topic! {:topic item :channel channel})
+            (try
+              (db/remove-from-keytable! {:keynum keynum})
+              (catch Exception e (str "caught exception: " (.getNextException e))))
+            (str "Topic #" item " cleared!")
+            (catch Exception e (str "caught exception: " (.getNextException e))))
+          ))
+      "No matching keytable found. Please try again."
+      #_(try 
+          (db/clear-agenda-by-channel! params)
+          (str "Channel #" channel_name " cleared!")
+          (catch Exception e (str "caught exception: " (.getNextException e)))))))
+
 (defn process-request-by-topic [{:keys [user_name topic channel_id topic-request] :as params}]
   (let [splits (str/split topic-request #" " 2)
         command (first splits)
@@ -48,15 +78,9 @@
     (condp = command
       "add" (add-agenda! :topic topic :channel channel_id :username user_name :content text) 
       "delete" (delete-agenda! :topic topic :channel channel_id :id text)
-      "clear" (clear-agenda-topic! :topic topic)
+      "clear" (clear-agenda! :channel channel_id :item topic)
       "list" (list-agendas-in-topic :topic topic :channel channel_id)
       "not a valid command")))
-
-(defn- clear-channel! [& {:keys [channel_id channel_name] :as params}]
-  (try
-    (db/clear-agenda-by-channel! params)
-    (str "Channel #" channel_name " cleared!")
-    (catch Exception e (str "caught exception: " (.getNextException e)))))
 
 (defn process-request [{:keys [channel_id user_name text channel_name] :as params}]
   (let [splits (str/split text #" " 2)
@@ -66,5 +90,6 @@
       "list" (list-agendas-in-channel :channel channel_id :topic channel_name)
       "add"  (process-request-by-topic (assoc params :topic-request text :topic channel_name))
       "delete" (process-request-by-topic (assoc params :topic-request text :topic channel_name))
-      "clear" (clear-channel! :channel channel_id :channel_name channel_name)
+      "clear" (clear-agenda! :channel channel_id :item text)
+      "keytable" (clear-agenda-for-real! :keynum topic-request :channel channel_id)
       (process-request-by-topic (assoc params :topic-request topic-request :topic topic)))))

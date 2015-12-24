@@ -10,3 +10,5 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 TAGS
+/.DS_Store
+*.DS_store
