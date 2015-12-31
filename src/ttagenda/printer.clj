@@ -18,20 +18,17 @@
   (let [topic (first r)
         merged (map vector (iterate inc 1) r)]
     (str "*Topic: #" (:topic (first r)) "*\n"
-         "----------------------------------------------------------------------------------------------------\n"
-         "  id            user                              item                                                   \n"
-         "----------------------------------------------------------------------------------------------------\n"
+         "  id\t\titem\n"
          (reduce
           (fn [i v]
             (let [displayid (first v)
                   result (last v)]            
               (str "(" (:id result) ")"
-                   "\t\t" (:username result)
-                   (if (> 10 (:id result)) "\t\t\t\t\t\t\t" "\t\t\t\t\t\t ")
+                   (if (> 10 (:id result)) "\t\t" "\t ")
                    displayid
                    (if (> 10  displayid) ".\t\t" ".\t")
                    (:content result)
-                   "\n"
+                   "\t(" (:username result) ")\n"
                    i)))
           " "
           (reverse merged)))))
