@@ -8,7 +8,7 @@
 
 (defroutes app-routes
   (POST "/" {:keys [params] :as  request}
-        (if (and (= "/az" (:command params))
+        (if (and (= "/aa" (:command params))
                  (= auth-token (:token params)))
           (do (process-request params))
           {:status 400

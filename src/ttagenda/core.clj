@@ -45,7 +45,7 @@
   (prn params)
   (let [keynum (make-keytable)]
     (if (= 1 (db/insert-key-table! {:keynum keynum :channel channel :item item}))
-      (str "to confirm your request, type /az keytable " keynum)
+      (str "to confirm your request, type /aa keytable " keynum)
       "operation failed")))
 
 (defn- clear-agenda-for-real! [& {:keys [keynum channel user] :as params}]
@@ -94,16 +94,16 @@
 (defn- display-documentation []
   "\n*AGENDA DOCUMENTATION*\n
    ----------------------------------------------------------------\n
-   */az list* : Lists agendas in default topic, shows other available topics in channel\n
-   */az add [text]* : Adds to default channel topic\n
-   */az delete [id no.]* : Delete id number in default topic\n
+   */aa list* : Lists agendas in default topic, shows other available topics in channel\n
+   */aa add [text]* : Adds to default channel topic\n
+   */aa delete [id no.]* : Delete id number in default topic\n
    \t\t\t \"deletion successful\" is returned when something is actually deleted\n
    \t\t\t \"nothing deleted ...\" is returned when ... nothing is deleted\n
    \t\t\t*you can only delete items within your channel*\n
-   */az clear* : clears all agendas in channel.\n
+   */aa clear* : clears all agendas in channel.\n
    \t\t\tTriggers the creation of a keytable, because this is a dangerous command.\n
-  */az [topic] [add | list | delete | clear ]* : self-explanatory actions on sub-topics within channel\n
-  * /az keytable [keynum]* : enter the passphrase here te confirm the clear command!"
+  */aa [topic] [add | list | delete | clear ]* : self-explanatory actions on sub-topics within channel\n
+  * /aa keytable [keynum]* : enter the passphrase here te confirm the clear command!"
   )
 
 (defn process-request [{:keys [channel_id user_name text channel_name] :as params}]
