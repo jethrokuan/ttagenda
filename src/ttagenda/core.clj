@@ -5,12 +5,12 @@
             [ttagenda.webhook :refer [post-to-agenda]]
             [ttagenda.keytable :refer [make-keytable]]))
 
-(defn- add-agenda! [& {:keys [channel topic username content] :as params}]
+(defn- add-agenda! [& {:keys [channel topic user content] :as params}]
   (if (nil? content)
     "your input cannot be empty"
     (try
-      (db/create-agenda! params)
-      (post-to-agenda {:text (str "_'" content "'_" " added to topic #" topic)
+      (db/create-agenda! (assoc params :username user))
+      (post-to-agenda {:text (str "@" user " added " "_'" content "'_" " to topic #" topic)
                        :channel channel})
       (catch Exception e (str "caught exception: " (.getNextException e))))))
 
@@ -26,17 +26,19 @@
                                      "yay! nothing here!"
                                      (p/print-topics topics)))))
 
-(defn- delete-agenda! [& {:keys [id] :as params}]
+(defn- delete-agenda! [& {:keys [topic id user] :as params}]
   (if (nil? id)
     "your input cannot be empty"
     (let [iid (read-string id)]
       (cond
         (not (integer? iid)) "your input must be an integer"
         :else (try
-                (if (= 0 (db/delete-agenda! (assoc params :id iid)))                 
-                  "nothing deleted... please check your id input again."
-                  (post-to-agenda {:text "deletion successful!"
-                                   :channel (:channel params)}))
+                (if-let [item (seq (db/find-agenda {:id iid}))]
+                  (if (= 0 (db/delete-agenda! (assoc params :id iid)))              
+                    "The id you chose is not deletable with your current command"
+                    (post-to-agenda {:text (str "@" user " deleted \""(-> item first :content) "\"" " from #" topic)
+                                     :channel (:channel params)}))
+                  "there is no item with this id")                
                 (catch Exception e (str "caught exception: " (.getNextException e))))))))
 
 (defn- clear-agenda! [& {:keys [channel item] :as params}]
@@ -46,7 +48,7 @@
       (str "to confirm your request, type /agenda keytable " keynum)
       "operation failed")))
 
-(defn- clear-agenda-for-real! [& {:keys [keynum channel] :as params}]
+(defn- clear-agenda-for-real! [& {:keys [keynum channel user] :as params}]
   (let [r (db/find-key {:keynum keynum})]
     (if (seq r)
       (let [item (:item (first r))]
@@ -56,7 +58,7 @@
                     (try
                       (db/remove-from-keytable! {:keynum keynum})
                       (catch Exception e (str "caught exception: " (.getNextException e))))
-                    (post-to-agenda {:text "Channel cleared!"
+                    (post-to-agenda {:text (str "@" user " cleared the channel!")
                                      :channel channel})
                     (catch Exception e (str "caught exception: " (.getNextException e))))
           (try
@@ -64,7 +66,7 @@
             (try
               (db/remove-from-keytable! {:keynum keynum})
               (catch Exception e (str "caught exception: " (.getNextException e))))
-            (post-to-agenda {:text (str "Topic _#" item "'_" " cleared!")
+            (post-to-agenda {:text (str "@" user " cleared topic #" item)
                              :channel channel})
             (catch Exception e (str "caught exception: " (.getNextException e))))
           ))
@@ -79,8 +81,8 @@
         command (first splits)
         text (second splits)]
     (condp = command
-      "add" (add-agenda! :topic topic :channel channel_id :username user_name :content text) 
-      "delete" (delete-agenda! :topic topic :channel channel_id :id text)
+      "add" (add-agenda! :topic topic :channel channel_id :user user_name :content text) 
+      "delete" (delete-agenda! :topic topic :channel channel_id :id text :user user_name)
       "clear" (clear-agenda! :channel channel_id :item topic)
       "list" (list-agendas-in-topic :topic topic :channel channel_id)
       "not a valid command")))
@@ -111,5 +113,5 @@
       "delete" (process-request-by-topic (assoc params :topic-request text :topic channel_name))
       "clear" (clear-agenda! :channel channel_id :item text)
       "help" (display-documentation)
-      "keytable" (clear-agenda-for-real! :keynum topic-request :channel channel_id)
-      (process-request-by-topic (assoc params :topic-request topic-request :topic topic)))))
+      "keytable" (clear-agenda-for-real! :keynum topic-request :channel channel_id :user user_name)
+      (process-request-by-topic (assoc params :topic-request topic-request :topic topic :user user_name)))))

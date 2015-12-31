@@ -37,6 +37,10 @@ WHERE ID=:id AND TOPIC=:topic AND CHANNEL=:channel
 SELECT COUNT(*) FROM agenda
 WHERE TOPIC=:topic
 
+-- name: find-agenda
+SELECT * FROM agenda
+WHERE ID=:id
+
 -- name: create-key-table!
 CREATE TABLE keytable (
 ID SERIAL,
