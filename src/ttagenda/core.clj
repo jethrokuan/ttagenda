@@ -10,7 +10,7 @@
     "your input cannot be empty"
     (try
       (db/create-agenda! (assoc params :username user))
-      (post-to-agenda {:text (str "@" user " added " "_'" content "'_" " to topic #" topic)
+      (post-to-agenda {:text (str "@" user " added " "_'" content "'_" " to #" topic)
                        :channel channel})
       (catch Exception e (str "caught exception: " (.getNextException e))))))
 
@@ -36,7 +36,7 @@
                 (if-let [item (seq (db/find-agenda {:id iid}))]
                   (if (= 0 (db/delete-agenda! (assoc params :id iid)))              
                     "The id you chose is not deletable with your current command"
-                    (post-to-agenda {:text (str "@" user " deleted \""(-> item first :content) "\"" " from #" topic)
+                    (post-to-agenda {:text (str "@" user " deleted _\""(-> item first :content) "\"_" " from #" topic)
                                      :channel (:channel params)}))
                   "there is no item with this id")                
                 (catch Exception e (str "caught exception: " (.getNextException e))))))))
@@ -97,7 +97,7 @@
    \t\t\t \"nothing deleted ...\" is returned when ... nothing is deleted\n
    \t\t\t*you can only delete items within your channel*\n
    */agenda clear* : clears all agendas in channel.\n
-   \t\tTriggers the creation of a keytable, because this is a dangerous command.\n
+   \t\t\tTriggers the creation of a keytable, because this is a dangerous command.\n
   */agenda [topic] [add | list | delete | clear ]* : self-explanatory actions on sub-topics within channel\n
   * /agenda keytable [keynum]* : enter the passphrase here te confirm the clear command!"
   )
