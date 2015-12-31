@@ -45,7 +45,7 @@
   (prn params)
   (let [keynum (make-keytable)]
     (if (= 1 (db/insert-key-table! {:keynum keynum :channel channel :item item}))
-      (str "to confirm your request, type /agenda keytable " keynum)
+      (str "to confirm your request, type /az keytable " keynum)
       "operation failed")))
 
 (defn- clear-agenda-for-real! [& {:keys [keynum channel user] :as params}]
