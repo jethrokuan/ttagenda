@@ -81,25 +81,29 @@
         command (first splits)
         text (second splits)]
     (condp = command
-      "add" (add-agenda! :topic topic :channel channel_id :user user_name :content text) 
+      "a" (add-agenda! :topic topic :channel channel_id :user user_name :content text) 
+      "add" (add-agenda! :topic topic :channel channel_id :user user_name :content text)
+      "d" (delete-agenda! :topic topic :channel channel_id :id text :user user_name)
       "delete" (delete-agenda! :topic topic :channel channel_id :id text :user user_name)
+      "c" (clear-agenda! :channel channel_id :item topic)
       "clear" (clear-agenda! :channel channel_id :item topic)
+      "l" (list-agendas-in-topic :topic topic :channel channel_id)
       "list" (list-agendas-in-topic :topic topic :channel channel_id)
       "not a valid command")))
 
 (defn- display-documentation []
   "\n*AGENDA DOCUMENTATION*\n
    ----------------------------------------------------------------\n
-   */agenda list* : Lists agendas in default topic, shows other available topics in channel\n
-   */agenda add [text]* : Adds to default channel topic\n
-   */agenda delete [id no.]* : Delete id number in default topic\n
+   */az list* : Lists agendas in default topic, shows other available topics in channel\n
+   */az add [text]* : Adds to default channel topic\n
+   */az delete [id no.]* : Delete id number in default topic\n
    \t\t\t \"deletion successful\" is returned when something is actually deleted\n
    \t\t\t \"nothing deleted ...\" is returned when ... nothing is deleted\n
    \t\t\t*you can only delete items within your channel*\n
-   */agenda clear* : clears all agendas in channel.\n
+   */az clear* : clears all agendas in channel.\n
    \t\t\tTriggers the creation of a keytable, because this is a dangerous command.\n
-  */agenda [topic] [add | list | delete | clear ]* : self-explanatory actions on sub-topics within channel\n
-  * /agenda keytable [keynum]* : enter the passphrase here te confirm the clear command!"
+  */az [topic] [add | list | delete | clear ]* : self-explanatory actions on sub-topics within channel\n
+  * /az keytable [keynum]* : enter the passphrase here te confirm the clear command!"
   )
 
 (defn process-request [{:keys [channel_id user_name text channel_name] :as params}]
@@ -108,10 +112,16 @@
         topic-request (last splits)]
     (condp = topic
       "" (list-agendas-in-channel :channel channel_id :topic channel_name)
+      "l" (list-agendas-in-channel :channel channel_id :topic channel_name)
       "list" (list-agendas-in-channel :channel channel_id :topic channel_name)
+      "a" (process-request-by-topic (assoc params :topic-request text :topic channel_name))
       "add"  (process-request-by-topic (assoc params :topic-request text :topic channel_name))
+      "d" (process-request-by-topic (assoc params :topic-request text :topic channel_name))
       "delete" (process-request-by-topic (assoc params :topic-request text :topic channel_name))
+      "c" (clear-agenda! :channel channel_id :item text)
       "clear" (clear-agenda! :channel channel_id :item text)
+      "h" (display-documentation)
       "help" (display-documentation)
+      "k" (clear-agenda-for-real! :keynum topic-request :channel channel_id :user user_name)
       "keytable" (clear-agenda-for-real! :keynum topic-request :channel channel_id :user user_name)
       (process-request-by-topic (assoc params :topic-request topic-request :topic topic :user user_name)))))
